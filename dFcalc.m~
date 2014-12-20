@@ -1,0 +1,15 @@
+function dF = dFcalc(subTrace,rawTrace,mode)
+
+if ~exist('mode','var') || isempty(mode)
+    mode = 'linear';
+end
+
+nSigs = size(subTrace,1);
+dF = subTrace;
+for nSig = 1:nSigs
+    dF(nSig,:) = subTrace(nSig,:)./getF_(rawTrace(nSig,:),mode);
+    dF(nSig,:) = deBleach(dF(nSig,:),mode);
+end
+
+
+dF = bsxfun(@minus,dF,prctile(dF,
