@@ -1,5 +1,5 @@
 %% Choose trace
-sig = de(10,:);
+sig = de(3,:);
 
 %% Filter Signals
 f = gausswin(15)/sum(gausswin(15));
@@ -8,8 +8,8 @@ fY = conv(yV,f,'same');
 fX2 = sqrt(fX.^2);
 fY2 = sqrt(fY.^2);
 fSpd = sqrt(fX.^2 + fY.^2);
-fSig = conv(sig, 
-mvPred = cat(1,fX,fY,fX2,fY2,fSpd);
+fSig = conv(sig,f,'same');
+mvPred = cat(1,fX,fY,fX2,fY2,fSpd,fSig);
 
 
 %% Create Predictor Matrix
@@ -30,7 +30,9 @@ Y = sig(validInd(1):validInd(2))';
 
 %% Set lasso options
 
-opt = statset('UseParallel',true);
-parpool(),
-[B FitInfo] = lassoglm(X,Y,'gamma','link','log','CV',5,'Options',opt);
+% opt = statset('UseParallel',true);
+% parpool(),
+% [B FitInfo] = lassoglm(X,Y,'gamma','link','log','CV',5,'Options',opt);
 
+[B FitInfo] = lassoglm(X,Y,'gamma','link','log','CV',5);
+display('Done!'),
