@@ -1,11 +1,14 @@
-%% Choose trace
-neur = 6;
-sig = de(neur,:);
+% %% Choose trace
+% neur = 5;
+% sig = de(neur,:);
 
 %% Create Predictor Matrix
 Y_scale = 3;
 shifts = [0 1 2 3 5 8 13 21 34 55 89 144 233];
+%shifts = [0:1:10 12 15 19 24 30 40 55 75 100 130 170];
 shifts = [-fliplr(shifts(2:end)),shifts];
+widths = abs(shifts)/2;
+%widths = ones(1,length(shifts)) * 1;
 nShifts = length(shifts);
 X = [];
 Y = sig*Y_scale;
@@ -13,15 +16,12 @@ validInd = max(abs(shifts))+1:length(sig)-max(abs(shifts));
 
 
 for nShift = 1:nShifts
-    sWidth = abs(shifts(nShift))/2;
+    sWidth = widths(nShift);
     sShift = shifts(nShift);
     xBasis = makeGLMbasis(xV,sWidth,sShift);
     yBasis = makeGLMbasis(yV,sWidth,sShift);
     spdBasis = makeGLMbasis(sqrt(xV.^2+yV.^2),sWidth,sShift);
-    %x2Basis = makeGLMbasis(xV.^2,sWidth,sShift);
-    %y2Basis = makeGLMbasis(yV.^2,sWidth,sShift);
-    
-    %X = cat(1,X,xBasis,yBasis,x2Basis,y2Basis);
+
     X = cat(1,X,xBasis,yBasis,spdBasis);
 end
 X = X';
@@ -31,28 +31,26 @@ X = X(validInd,:);
 Y = Y(validInd);
 
 %% Set lasso options
+opt = [];
+opt.alpha = 1e-1;
+nFolds = 8;
+foldID = [];
+%foldID = floor((1:length(Y))/(length(Y)+1) * nFolds) + 1;
 
-opt = statset('UseParallel',true);
-%[B1 FitInfo1] = lassoglm(X,Y,'poisson','Alpha',1,'CV',5,'Options',opt);
-%[B05 FitInfo05] = lassoglm(X,Y,'poisson','Alpha',0.5,'CV',5,'Options',opt);
-%[B01 FitInfo01] = lassoglm(X,Y,'poisson','Alpha',0.1,'CV',5,'Options',opt);
-[B FitInfo] = lassoglm(X,Y,'poisson','Alpha',1e-4,'Lambda',logspace(0,-4,100),'CV',6,'Options',opt);
-home,
-display('Done!'),
-neur,
-lassoPlot(B,FitInfo,'plottype','CV');
-lassoPlot(B,FitInfo,'PlotType','Lambda','XScale','log');
-
+CVerr = cvglmnet(X,Y,'poisson',glmnetSet(opt),'deviance',nFolds,foldID,true);
+cvglmnetPlot(CVerr),
+figure,glmnetPlot(CVerr.glmnet_fit,'lambda'),
 %% 
-lassoPlot(B,FitInfo,'plottype','CV');
-p = reshape(B(:,FitInfo.Index1SE),3,[]);
+fitCoef = cvglmnetCoef(CVerr);
+%fitCoef = cvglmnetCoef(CVerr,'lambda_min');
+p = reshape(fitCoef(2:end),3,[]);
 x=-750:750;
 b = zeros(1,1.5e3+1);
 b(751) = 1;
 
 bases = [];
 for shift = 1:length(shifts)
-    sWidth = abs(shifts(shift))/2;
+    sWidth = widths(shift);
     sShift = shifts(shift);
     bases(shift,:) = makeGLMbasis(b,sWidth,sShift);
 end
@@ -67,5 +65,5 @@ for nV=1:3
     %figure(rawFig),
     %plot(x,basis)
     figure(normFig),
-    plot(x,basis*std(X(:,36+nV)))
+    plot(x,basis*std(X(:,size(X,2)/2-1.5+nV)))
 end
