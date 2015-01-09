@@ -11,21 +11,22 @@ V.fast_thr = 0;
 V.fast_poiss = 0;
 V.fast_nonlin = 0;
 V.fast_plot = doPlot;
-V.fast_iter_max = 5;
+V.fast_iter_max = 1;
 V.fast_ignore_post = 0;
-V.est_sig = 1;
+V.est_sig = 0;
 V.est_lam = 0;
 V.est_gam = 0;
-V.est_a = 1;
-V.est_b = 1;
+V.est_a = 0;
+V.est_b = 0;
 
 %% P
 
-P.a = 0.2;
-P.b = prctile(F,25);
-P.sig = mad(Forig(Forig<1),1) * 1.4826;
+P.a = 0.15;
+P.b = median(F);
+fTemp = F(F<P.b);
+P.sig = mad([fTemp,2*max(fTemp)-fTemp],0);
 P.gam = 1-V.dt;
-P.lam = V.dt;
+P.lam = 1;
 
 %% deconvolve
 [F_est P_est V_est]=deconvFO(F,V,P);
