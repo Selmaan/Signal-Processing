@@ -1,4 +1,9 @@
 function [F_est F P_est V_est] = getDeconv(Forig,doPlot)
+
+if ~exist('doPlot','var') | isempty(doPlot)
+    doPlot = 0;
+end
+
 %% F
 F=Forig-min(Forig)+eps;
 
@@ -30,4 +35,6 @@ P.lam = 1;
 
 %% deconvolve
 [F_est P_est V_est]=deconvFO(F,V,P);
-clf,plot(conv(F,gausswin(15)/sum(gausswin(15)),'same')),hold on,plot(F_est),
+if doPlot
+    clf,plot(conv(F,gausswin(15)/sum(gausswin(15)),'same')),hold on,plot(F_est),
+end
