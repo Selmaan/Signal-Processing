@@ -30,7 +30,8 @@ P.a = 0.15;
 P.b = median(F);
 fTemp = F(F<P.b);
 P.sig = mad([fTemp,2*max(fTemp)-fTemp],0);
-P.gam = 1-V.dt;
+tau = 1.5;
+P.gam = 1 - (V.dt/tau); %3-V.dt
 P.lam = 1;
 
 %% deconvolve
