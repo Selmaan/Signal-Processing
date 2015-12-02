@@ -12,6 +12,7 @@ V.Ncells = 1;
 V.T = length(F);
 V.Npixels = 1;
 V.dt = 1/30;
+%V.dt = 1/30*10;
 V.fast_thr = 0;
 V.fast_poiss = 0;
 V.fast_nonlin = 0;
@@ -26,7 +27,7 @@ V.est_b = 0;
 
 %% P
 
-P.a = 0.15;
+P.a = 0.1;
 P.b = median(F);
 fTemp = F(F<P.b);
 P.sig = mad([fTemp,2*max(fTemp)-fTemp],0);
